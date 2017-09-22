@@ -20,7 +20,10 @@ RUN /bin/bash -c "/etc/slapdsetup.sh"
 RUN /bin/bash -c "/etc/setup.sh" 
 RUN service apache2 restart
 
-#RUN apt-get install -yq ldap-auth-client nscd
-#RUN auth-client-config -t nss -p lac_ldap
+RUN apt-get install -yq ldap-auth-client nscd
+RUN auth-client-config -t nss -p lac_ldap
 ADD setupClient.sh /etc/setupClient.sh
+RUN /bin/bash -c "/etc/setupClient.sh"
+ADD ldap.conf /etc/ldap.conf
+ADD ldap.secret /etc/ldap.secret
 #RUN /bin/bash -c "/etc/setupClient.sh"
