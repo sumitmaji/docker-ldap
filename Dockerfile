@@ -1,29 +1,98 @@
 FROM sumit/base
 MAINTAINER Sumit Kumar Maji
 
-RUN apt-get update
-#ARG DEBIAN_FRONTEND=noninteractive
-#RUN apt-get install -yq apt debconf
-#RUN apt-get upgrade -yq
-#RUN LC_ALL=C DEBIAN_FRONTEND=noninteractive apt-get install -y --force-yes --no-install-recommends \
-#	slapd ldap-utils
-
-RUN apt-get update
-RUN apt-get install -yq slapd ldap-utils
-RUN apt-get install -yq phpldapadmin
-#RUN dpkg-reconfigure slapd
 # Avoid ERROR: invoke-rc.d: policy-rc.d denied execution of start.
 RUN sed -i "s/^exit 101$/exit 0/" /usr/sbin/policy-rc.d
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG LDAP_DOMAIN=cloud.com
+ARG LDAP_ORG=CloudInc
+ARG LDAP_HOSTNAME=ldap.cloud.com
+ARG LDAP_PASSWORD=sumit
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# Keep upstart from complaining
+RUN dpkg-divert --local --rename --add /sbin/initctl
+RUN ln -sf /bin/true /sbin/initctl
+
+RUN apt-get update
+RUN apt-get install -yq apt debconf
+RUN apt-get upgrade -yq
+RUN apt-get -y -o Dpkg::Options::="--force-confdef" upgrade
+RUN apt-get -y dist-upgrade
+#RUN echo "slapd slapd/root_password password ${LDAP_PASSWORD}" | debconf-set-selections
+#RUN echo "slapd slapd/root_password_again password ${LDAP_PASSWORD}" | debconf-set-selections
+RUN echo "slapd slapd/internal/adminpw password ${LDAP_PASSWORD}" | debconf-set-selections
+RUN echo "slapd slapd/internal/generated_adminpw password ${LDAP_PASSWORD}" | debconf-set-selections
+RUN echo "slapd slapd/password2 password ${LDAP_PASSWORD}" | debconf-set-selections
+RUN echo "slapd slapd/password1 password ${LDAP_PASSWORD}" | debconf-set-selections
+RUN echo "slapd slapd/domain string ${LDAP_DOMAIN}" | debconf-set-selections
+RUN echo "slapd shared/organization string ${LDAP_ORG}" | debconf-set-selections
+RUN echo "slapd slapd/backend string HDB" | debconf-set-selections
+RUN echo "slapd slapd/purge_database boolean true" | debconf-set-selections
+RUN echo "slapd slapd/move_old_database boolean true" | debconf-set-selections
+RUN echo "slapd slapd/allow_ldap_v2 boolean false" | debconf-set-selections
+RUN echo "slapd slapd/no_configuration boolean false" | debconf-set-selections
+RUN echo "slapd slapd/dump_database_destdir string /var/backups/slapd-VERSION" | debconf-set-selections
+RUN echo "slapd slapd/dump_database select when needed" | debconf-set-selections
+
+
+RUN LC_ALL=C DEBIAN_FRONTEND=noninteractive apt-get install -y --force-yes slapd ldap-utils
+
+RUN apt-get install -yq phpldapadmin
 ADD setup.sh /etc/setup.sh
-ADD slapdsetup.sh /etc/slapdsetup.sh
-RUN /bin/bash -c "/etc/slapdsetup.sh"
 RUN /bin/bash -c "/etc/setup.sh" 
-RUN service apache2 restart
+
+# Set FQDN for Apache Webserver
+RUN echo "ServerName ${LDAP_HOSTNAME}" > /etc/apache2/conf-available/fqdn.conf
+RUN a2enconf fqdn
+
+#RUN service apache2 restart
+
+RUN echo "ldap-auth-config ldap-auth-config/rootbindpw password ${LDAP_PASSWORD}" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/bindpw password ${LDAP_PASSWORD}" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/dblogin boolean false" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/override boolean true" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/ldapns/ldap-server string ldap:///$LDAP_HOSTNAME" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/pam_password string md5" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/dbrootlogin boolean true" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/binddn string cn=proxyuser,dc=example,dc=net" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/ldapns/ldap_version string 3" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/move-to-debconf boolean true" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/ldapns/base-dn string dc=cloud,dc=com" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/rootbinddn string cn=admin,dc=cloud,dc=com" | debconf-set-selections
 
 RUN apt-get install -yq ldap-auth-client nscd
 RUN auth-client-config -t nss -p lac_ldap
 ADD setupClient.sh /etc/setupClient.sh
 RUN /bin/bash -c "/etc/setupClient.sh"
-ADD ldap.conf /etc/ldap.conf
-ADD ldap.secret /etc/ldap.secret
+#ADD ldap.conf /etc/ldap.conf
+#ADD ldap.secret /etc/ldap.secret
 #RUN /bin/bash -c "/etc/setupClient.sh"
+
+#RUN addgroup openldap
+#RUN adduser --ingroup openldap openldap
+RUN adduser openldap sudo
+RUN echo openldap:openldap | chpasswd
+#RUN chmod 777 /var/lib/ldap
+RUN chown -R openldap:openldap /var/lib/ldap
+
+#RUN chmod -R 777 /etc/ldap
+RUN chown -R openldap:openldap /etc/ldap
+
+RUN chgrp openldap /etc/init.d/slapd
+RUN chmod g+x /etc/init.d/slapd
+RUN echo "local4.*			/var/log/sldapd.log" > /etc/rsyslog.d/slapd.conf
+
+# Cleanup Apt
+RUN apt-get autoremove
+RUN apt-get autoclean
+RUN apt-get clean
+
+ADD bootstrap.sh /bootstrap.sh
+RUN chmod +x /bootstrap.sh
+
+
+EXPOSE 389 636 80
+ENTRYPOINT ["/bootstrap.sh"]
