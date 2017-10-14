@@ -64,6 +64,7 @@ start_ldap() {
    service slapd start
    service apache2 start
    service nscd start
+   service ssh restart
    create_ldif
 }
 

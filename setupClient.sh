@@ -31,6 +31,7 @@ if [ -z "$STATUS" ]
 then
 `sed -i '/pam_unix.so/ s/^/\n# Disable if using Kerberos\n/' /etc/pam.d/common-auth`
 `sed -i '/use_first_pass/ s/$/\n# Enable if using Kerberos\n#auth    \[success=2 default=ignore\]      pam_krb5.so minimum_uid=1000\n#auth    \[success=1 default=ignore\]      pam_unix.so nullok_secure try_first_pass\n/' /etc/pam.d/common-auth`
+echo "account required    pam_access.so" >> /etc/pam.d/common-auth
 fi
 
 STATUS=`grep "Enable if using Kerberos" /etc/pam.d/common-password`
