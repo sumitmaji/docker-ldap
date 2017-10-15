@@ -91,6 +91,8 @@ RUN chgrp openldap /etc/init.d/slapd
 RUN chmod g+x /etc/init.d/slapd
 RUN echo "local4.*			/var/log/sldapd.log" > /etc/rsyslog.d/slapd.conf
 
+RUN apt-get install -yq ntp ntpdate nmap libsasl2-modules-gssapi-mit
+
 # Cleanup Apt
 RUN apt-get autoremove
 RUN apt-get autoclean
@@ -98,7 +100,7 @@ RUN apt-get clean
 
 ADD bootstrap.sh /bootstrap.sh
 RUN chmod +x /bootstrap.sh
-
+ADD kerberos.schema.gz /kerberos.schema.gz 
 
 EXPOSE 389 636 80
 ENTRYPOINT ["/bootstrap.sh"]

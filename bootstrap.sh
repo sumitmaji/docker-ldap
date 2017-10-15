@@ -52,6 +52,30 @@ EOF
 
 
 create_ldif() {
+
+gzip -d /kerberos.schema.gz
+echo "include /kerberos.schema" > /schema_convert.conf
+mkdir ./ldif_result
+
+slapcat -f ./schema_convert.conf -F ./ldif_result \
+-s "cn=kerberos,cn=schema,cn=config"
+
+cp ./ldif_result/cn\=config/cn\=schema/cn\=\{0\}kerberos.ldif \
+./kerberos.ldif
+
+#####Edit the file here
+sed -i 's/cn={0}kerberos/cn=kerberos,cn=schema,cn=config/' ./kerberos.ldif
+sed -i 's/{0}kerberos/kerberos/' ./kerberos.ldif
+sed -i '$d' ./kerberos.ldif
+sed -i '$d' ./kerberos.ldif
+sed -i '$d' ./kerberos.ldif
+sed -i '$d' ./kerberos.ldif
+sed -i '$d' ./kerberos.ldif
+sed -i '$d' ./kerberos.ldif
+sed -i '$d' ./kerberos.ldif
+
+ldapadd -QY EXTERNAL -H ldapi:/// -f ./kerberos.ldif
+
 echo "dn: olcDatabase={0}config,cn=config
 changetype: modify
 add: olcAccess
@@ -107,10 +131,31 @@ uid: smaji
 uidnumber: 1000
 userpassword: {MD5}ciX/ceiCGyT9crTI/albmg==" > /var/tmp/sumit.ldif
 ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/sumit.ldif
+
+echo "dn: ou=krb5,dc=cloud,dc=com
+ou: krb5
+objectClass: organizationalUnit
+
+dn: cn=kdc-srv,ou=krb5,dc=cloud,dc=com
+cn: kdc-srv
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+description: Default bind DN for the Kerberos KDC server
+userPassword: sumit
+
+dn: cn=adm-srv,ou=krb5,dc=cloud,dc=com
+cn: adm-srv
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+description: Default bind DN for the Kerberos Administration server
+userPassword: sumit" > /tmp/krb5.ldif
+ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /tmp/krb5.ldif
+
+
 }
 
 start_ldap() {
-   create_config
+   #create_config
    service slapd start
    service apache2 start
    service nscd start
