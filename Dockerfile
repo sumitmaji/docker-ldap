@@ -101,6 +101,7 @@ RUN apt-get clean
 ADD bootstrap.sh /bootstrap.sh
 RUN chmod +x /bootstrap.sh
 ADD kerberos.schema.gz /kerberos.schema.gz 
+ADD config/access.ldif /access.ldif
 
 EXPOSE 389 636 80
 ENTRYPOINT ["/bootstrap.sh"]

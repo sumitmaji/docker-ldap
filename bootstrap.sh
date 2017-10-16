@@ -8,7 +8,7 @@
 : ${KERB_ADMIN_USER:=root}
 : ${KERB_ADMIN_PASS:=admin}
 : ${KDC_ADDRESS:=kerberos.cloud.com}
-: ${SEARCH_DOMAINS:=search.consul node.dc1.consul}
+: ${LDAP_HOST:=ldap://ldap.cloud.com}
 
 fix_nameserver() {
   cat>/etc/resolv.conf<<EOF
@@ -22,7 +22,6 @@ fix_hostname() {
 }
 
 create_config() {
-
   cat>/etc/krb5.conf<<EOF
 [logging]
  default = FILE:/var/log/kerberos/krb5libs.log
@@ -36,16 +35,31 @@ create_config() {
  ticket_lifetime = 24h
  renew_lifetime = 7d
  forwardable = true
+ proxiable = true
 
 [realms]
  $REALM = {
   kdc = $KDC_ADDRESS
   admin_server = $KDC_ADDRESS
-}
+  database_module = openldap_ldapconf
+ }
 
 [domain_realm]
  .$DOMAIN_REALM = $REALM
  $DOMAIN_REALM = $REALM
+
+[dbdefaults]
+        ldap_kerberos_container_dn = cn=krbContainer,dc=cloud,dc=com
+
+[dbmodules]
+        openldap_ldapconf = {
+                db_library = kldap
+                ldap_kdc_dn = cn=kdc-srv,ou=krb5,dc=cloud,dc=com
+                ldap_kadmind_dn = cn=adm-srv,ou=krb5,dc=cloud,dc=com
+                ldap_service_password_file = /etc/krb5kdc/service.keyfile
+                ldap_conns_per_server = 5
+                ldap_servers = $LDAP_HOST
+        }
 EOF
 }
 
@@ -82,6 +96,7 @@ add: olcAccess
 olcAccess: to * by dn="cn=admin,dc=cloud,dc=com" write" > /var/tmp/access.ldif
 
 ldapmodify -c -Y EXTERNAL -H ldapi:/// -f /var/tmp/access.ldif
+ldapmodify -c -Y EXTERNAL -H ldapi:/// -f /access.ldif
 
   sudo ldapadd -c -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/core.ldif
   sudo ldapadd -c -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/cosine.ldif
@@ -155,8 +170,9 @@ ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /tmp/krb5.ldif
 }
 
 start_ldap() {
-   #create_config
+   create_config
    service slapd start
+   # /usr/sbin/slapd -h "ldap:/// ldapi:///" -g openldap -u openldap -F /etc/ldap/slapd.d -d Trace &>> /tmp/output.log 2>> /tmp/error.log
    service apache2 start
    service nscd start
    service ssh restart
