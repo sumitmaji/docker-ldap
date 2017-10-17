@@ -22,6 +22,11 @@ fix_hostname() {
 }
 
 create_config() {
+ mkdir -p /var/log/kerberos
+ touch /var/log/kerberos/krb5libs.log
+ touch /var/log/kerberos/krb5kdc.log
+ touch /var/log/kerberos/kadmind.log
+
   cat>/etc/krb5.conf<<EOF
 [logging]
  default = FILE:/var/log/kerberos/krb5libs.log
@@ -144,7 +149,7 @@ objectclass: top
 sn: Maji
 uid: smaji
 uidnumber: 1000
-userpassword: {MD5}ciX/ceiCGyT9crTI/albmg==" > /var/tmp/sumit.ldif
+userpassword: sumit" > /var/tmp/sumit.ldif
 ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/sumit.ldif
 
 echo "dn: ou=krb5,dc=cloud,dc=com
@@ -169,12 +174,18 @@ ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /tmp/krb5.ldif
 
 }
 
+enableGss() {
+ GSSAPIAuthentication yes
+ GSSAPICleanupCredentials yes
+}
+
 start_ldap() {
    create_config
    service slapd start
    # /usr/sbin/slapd -h "ldap:/// ldapi:///" -g openldap -u openldap -F /etc/ldap/slapd.d -d Trace &>> /tmp/output.log 2>> /tmp/error.log
    service apache2 start
    service nscd start
+   enableGss
    service ssh restart
    create_ldif
 }

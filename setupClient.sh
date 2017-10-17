@@ -7,41 +7,27 @@ then
 fi
 
 
-STATUS=`grep "umask=0022 skel=/etc/skel" /etc/pam.d/common-session`
+echo 'account [success=1 new_authtok_reqd=done default=ignore]        pam_unix.so
+account requisite                       pam_deny.so
+account required                        pam_permit.so
+account required                        pam_krb5.so minimum_uid=1000' > /etc/pam.d/common-account
 
-if [ -z "$STATUS" ]
-then
-`sed -i '/pam_ldap.so/ s/^/session required        pam_mkhomedir.so umask=0022 skel=\/etc\/skel\n/' /etc/pam.d/common-session`
-`sed -i '/session.*required.*pam_permit.so/ s/$/\n# Enable if using Kerberos:\n#session  optional  pam_krb5.so minimum_uid=1000\n/' /etc/pam.d/common-session`
-`sed -i '/pam_ldap.so/ s/^/\n# Disable if using Kerberos:\n/' /etc/pam.d/common-session`
-fi
+echo 'auth    [success=2 default=ignore]      pam_krb5.so minimum_uid=1000
+auth    [success=1 default=ignore]      pam_unix.so nullok_secure try_first_pass
+auth    requisite                       pam_deny.so
+auth    required                        pam_permit.so' > /etc/pam.d/common-auth
 
-STATUS=`grep "Enable if using Kerberos" /etc/pam.d/common-account`
-if [ -z "$STATUS" ]
-then
-`sed -i '/pam_unix.so/ s/^/\n# Disable if using Kerberos\n/' /etc/pam.d/common-account`
-`sed -i '/pam_ldap.so/ s/$/\n#Enable if using Kerberos:\n#account \[success=1 new_authtok_reqd=done default=ignore\]        pam_unix.so\n/' /etc/pam.d/common-account`
-echo "# Enable if using Kerberos:
-#account required                        pam_krb5.so minimum_uid=1000" >> /etc/pam.d/common-account
-fi
+echo 'password        [success=2 default=ignore]      pam_krb5.so minimum_uid=1000
+password        [success=1 default=ignore]      pam_unix.so obscure use_authtok try_first_pass sha512
+password        requisite                       pam_deny.so
+password        required                        pam_permit.so' > /etc/pam.d/common-password
 
-
-STATUS=`grep "Enable if using Kerberos" /etc/pam.d/common-auth`
-if [ -z "$STATUS" ]
-then
-`sed -i '/pam_unix.so/ s/^/\n# Disable if using Kerberos\n/' /etc/pam.d/common-auth`
-`sed -i '/use_first_pass/ s/$/\n# Enable if using Kerberos\n#auth    \[success=2 default=ignore\]      pam_krb5.so minimum_uid=1000\n#auth    \[success=1 default=ignore\]      pam_unix.so nullok_secure try_first_pass\n/' /etc/pam.d/common-auth`
-echo "account required    pam_access.so" >> /etc/pam.d/common-auth
-fi
-
-STATUS=`grep "Enable if using Kerberos" /etc/pam.d/common-password`
-if [ -z "$STATUS" ]
-then
-`sed -i '/pam_unix.so/ s/^/\n# Disable if using Kerberos\n/' /etc/pam.d/common-password`
-`sed -i '/try_first_pass/ s/$/\n# Enable if using Kerberos\n#password        \[success=2 default=ignore\]      pam_krb5.so minimum_uid=1000\n#password        \[success=1 default=ignore\]      pam_unix.so obscure use_authtok try_first_pass sha512\n/' /etc/pam.d/common-password`
-fi
-
-
+echo 'session [default=1]                     pam_permit.so
+session requisite                       pam_deny.so
+session required                        pam_permit.so
+session optional                        pam_krb5.so minimum_uid=1000
+session required        pam_unix.so
+session required        pam_mkhomedir.so        skel=/etc/skel umaks=0022' > /etc/pam.d/common-session
 
 
 

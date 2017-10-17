@@ -15,24 +15,12 @@ ENV DEBIAN_FRONTEND noninteractive
 # Keep upstart from complaining
 RUN dpkg-divert --local --rename --add /sbin/initctl
 RUN ln -sf /bin/true /sbin/initctl
-
+ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
 RUN apt-get install -yq apt debconf
 RUN apt-get upgrade -yq
 RUN apt-get -y -o Dpkg::Options::="--force-confdef" upgrade
 RUN apt-get -y dist-upgrade
-
-RUN apt-get -yq install python-pip python-ldap
-RUN apt-get install -yq python-dev
-RUN apt-get install -yq libsasl2-dev libldap2-dev libssl-dev
-RUN pip install ssh-ldap-pubkey
-
-RUN echo "AuthorizedKeysCommand /usr/local/bin/ssh-ldap-pubkey-wrapper" >> /etc/ssh/sshd_config
-RUN echo "AuthorizedKeysCommandUser nobody" >> /etc/ssh/sshd_config
-RUN sed -i 's/UsePAM no/UsePAM yes/g' /etc/ssh/sshd_config
-RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-RUN service ssh restart
-
 
 RUN echo "slapd slapd/internal/adminpw password ${LDAP_PASSWORD}" | debconf-set-selections
 RUN echo "slapd slapd/internal/generated_adminpw password ${LDAP_PASSWORD}" | debconf-set-selections
