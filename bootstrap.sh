@@ -152,6 +152,22 @@ uidnumber: 1000
 userpassword: sumit" > /var/tmp/sumit.ldif
 ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/sumit.ldif
 
+echo "dn: cn=hduser,ou=users,dc=cloud,dc=com
+cn: hduser
+gidnumber: 500
+givenname: hduser
+homedirectory: /home/users/hduser
+loginshell: /bin/bash
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: hduser
+uid: hduser
+uidnumber: 1000
+userpassword: hadoop" > /var/tmp/sumit.ldif
+ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/sumit.ldif
+
+
 echo "dn: ou=krb5,dc=cloud,dc=com
 ou: krb5
 objectClass: organizationalUnit
