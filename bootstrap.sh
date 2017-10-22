@@ -205,8 +205,10 @@ ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /tmp/krb5.ldif
 }
 
 enableGss() {
+ sed -i 's/UsePAM no/UsePAM yes/' /etc/ssh/sshd_config
  echo 'GSSAPIAuthentication yes
  GSSAPICleanupCredentials yes' >> /etc/ssh/sshd_config
+
 }
 
 start_ldap() {
