@@ -137,35 +137,49 @@ objectclass: posixGroup
 objectclass: top" > /var/tmp/groups.ldif
 ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/groups.ldif
 
-echo "dn: cn=Sumit Maji,ou=users,dc=cloud,dc=com
-cn: Sumit Maji
-gidnumber: 500
-givenname: Sumit
-homedirectory: /home/users/smaji
-loginshell: /bin/bash
-objectclass: inetOrgPerson
-objectclass: posixAccount
-objectclass: top
-sn: Maji
-uid: smaji
-uidnumber: 1000
-userpassword: sumit" > /var/tmp/sumit.ldif
-ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/sumit.ldif
+/utility/ldap/createGroup.sh hadoop
+/utility/ldap/createUser.sh smaji hadoop sumit
+/utility/ldap/createUser.sh hduser hadoop hadoop
+/utility/ldap/createUser.sh hive hadoop hive
+/utility/ldap/createUser.sh hue hadoop hue
+/utility/ldap/createUser.sh oozie hadoop oozie
+/utility/ldap/createUser.sh yarn hadoop yarn
+/utility/ldap/createUser.sh hdfs hadoop hdfs
+/utility/ldap/createUser.sh mapred hadoop mapred
+/utility/ldap/createUser.sh jobhist hadoop jobhist
+/utility/ldap/createUser.sh spark hadoop spark
+/utility/ldap/createUser.sh pig hadoop pig
+/utility/ldap/createUser.sh hbase hadoop hbase
 
-echo "dn: cn=hduser,ou=users,dc=cloud,dc=com
-cn: hduser
-gidnumber: 500
-givenname: hduser
-homedirectory: /home/users/hduser
-loginshell: /bin/bash
-objectclass: inetOrgPerson
-objectclass: posixAccount
-objectclass: top
-sn: hduser
-uid: hduser
-uidnumber: 1000
-userpassword: hadoop" > /var/tmp/sumit.ldif
-ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/sumit.ldif
+#echo "dn: cn=Sumit Maji,ou=users,dc=cloud,dc=com
+#cn: Sumit Maji
+#gidnumber: 500
+#givenname: Sumit
+#homedirectory: /home/users/smaji
+#loginshell: /bin/bash
+#objectclass: inetOrgPerson
+#objectclass: posixAccount
+#objectclass: top
+#sn: Maji
+#uid: smaji
+#uidnumber: 1000
+#userpassword: sumit" > /var/tmp/sumit.ldif
+#ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/sumit.ldif
+
+#echo "dn: cn=hduser,ou=users,dc=cloud,dc=com
+#cn: hduser
+#gidnumber: 500
+#givenname: hduser
+#homedirectory: /home/users/hduser
+#loginshell: /bin/bash
+#objectclass: inetOrgPerson
+#objectclass: posixAccount
+#objectclass: top
+#sn: hduser
+#uid: hduser
+#uidnumber: 1000
+#userpassword: hadoop" > /var/tmp/sumit.ldif
+#ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/sumit.ldif
 
 
 echo "dn: ou=krb5,dc=cloud,dc=com

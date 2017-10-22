@@ -90,6 +90,19 @@ ADD bootstrap.sh /bootstrap.sh
 RUN chmod +x /bootstrap.sh
 ADD kerberos.schema.gz /kerberos.schema.gz 
 ADD config/access.ldif /access.ldif
+RUN touch /var/userid
+RUN echo '1000' > /var/userid
+RUN chown root:root /var/userid
+RUN touch /var/groupid
+RUN chown root:root /var/groupid
+RUN echo '502' > /var/groupid
+RUN mkdir -p /utility/ldap
+ADD utility/createGroup.sh /utility/ldap/createGroup.sh
+ADD utility/createUser.sh /utility/ldap/createUser.sh
+RUN chmod 700 /utility/ldap/createGroup.sh
+RUN chmod 700 /utility/ldap/createUser.sh
+RUN chown root:root /utility/ldap/createUser.sh
+RUN chown root:root /utility/ldap/createGroup.sh
 
 EXPOSE 389 636 80
 ENTRYPOINT ["/bootstrap.sh"]
