@@ -150,6 +150,7 @@ ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/group
 /utility/ldap/createUser.sh spark hadoop spark
 /utility/ldap/createUser.sh pig hadoop pig
 /utility/ldap/createUser.sh hbase hadoop hbase
+/utility/ldap/createUser.sh livy hadoop livy
 
 #echo "dn: cn=Sumit Maji,ou=users,dc=cloud,dc=com
 #cn: Sumit Maji
