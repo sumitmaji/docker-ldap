@@ -41,13 +41,14 @@ RUN LC_ALL=C DEBIAN_FRONTEND=noninteractive apt-get install -y --force-yes slapd
 
 RUN apt-get install -yq phpldapadmin
 ADD setup.sh /etc/setup.sh
-RUN /bin/bash -c "/etc/setup.sh" 
+RUN /bin/bash -c "/etc/setup.sh $LDAP_HOSTNAME" 
 
 # Set FQDN for Apache Webserver
 RUN echo "ServerName ${LDAP_HOSTNAME}" > /etc/apache2/conf-available/fqdn.conf
 RUN a2enconf fqdn
 
 #RUN service apache2 restart
+ARG BASE_DN="dc=cloud,dc=com"
 
 RUN echo "ldap-auth-config ldap-auth-config/rootbindpw password ${LDAP_PASSWORD}" | debconf-set-selections
 RUN echo "ldap-auth-config ldap-auth-config/bindpw password ${LDAP_PASSWORD}" | debconf-set-selections
@@ -59,15 +60,16 @@ RUN echo "ldap-auth-config ldap-auth-config/dbrootlogin boolean true" | debconf-
 RUN echo "ldap-auth-config ldap-auth-config/binddn string cn=proxyuser,dc=example,dc=net" | debconf-set-selections
 RUN echo "ldap-auth-config ldap-auth-config/ldapns/ldap_version string 3" | debconf-set-selections
 RUN echo "ldap-auth-config ldap-auth-config/move-to-debconf boolean true" | debconf-set-selections
-RUN echo "ldap-auth-config ldap-auth-config/ldapns/base-dn string dc=cloud,dc=com" | debconf-set-selections
-RUN echo "ldap-auth-config ldap-auth-config/rootbinddn string cn=admin,dc=cloud,dc=com" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/ldapns/base-dn string $BASE_DN" | debconf-set-selections
+RUN echo "ldap-auth-config ldap-auth-config/rootbinddn string cn=admin,$BASE_DN" | debconf-set-selections
 
 ADD krb-ldap-config /etc/auth-client-config/profile.d/krb-ldap-config
 RUN apt-get install -yq ldap-auth-client nscd krb5-user libpam-krb5 libpam-ccreds
 RUN auth-client-config -a -p krb_ldap
 ADD setupClient.sh /etc/setupClient.sh
 RUN /bin/bash -c "/etc/setupClient.sh"
-ADD ldap.secret /etc/ldap.secret
+#ADD ldap.secret /etc/ldap.secret
+RUN echo "$LDAP_PASSWORD" > /etc/ldap.secret
 RUN chmod 600 /etc/ldap.secret
 RUN adduser openldap sudo
 RUN echo openldap:openldap | chpasswd

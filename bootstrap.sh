@@ -9,6 +9,7 @@
 : ${KERB_ADMIN_PASS:=admin}
 : ${KDC_ADDRESS:=kerberos.cloud.com}
 : ${LDAP_HOST:=ldap://ldap.cloud.com}
+: ${BASE_DN:=dc=cloud,dc=com}
 
 fix_nameserver() {
   cat>/etc/resolv.conf<<EOF
@@ -54,13 +55,13 @@ create_config() {
  $DOMAIN_REALM = $REALM
 
 [dbdefaults]
-        ldap_kerberos_container_dn = cn=krbContainer,dc=cloud,dc=com
+        ldap_kerberos_container_dn = cn=krbContainer,$BASE_DN
 
 [dbmodules]
         openldap_ldapconf = {
                 db_library = kldap
-                ldap_kdc_dn = cn=kdc-srv,ou=krb5,dc=cloud,dc=com
-                ldap_kadmind_dn = cn=adm-srv,ou=krb5,dc=cloud,dc=com
+                ldap_kdc_dn = cn=kdc-srv,ou=krb5,$BASE_DN
+                ldap_kadmind_dn = cn=adm-srv,ou=krb5,$BASE_DN
                 ldap_service_password_file = /etc/krb5kdc/service.keyfile
                 ldap_conns_per_server = 5
                 ldap_servers = $LDAP_HOST
@@ -98,7 +99,7 @@ ldapadd -QY EXTERNAL -H ldapi:/// -f ./kerberos.ldif
 echo "dn: olcDatabase={0}config,cn=config
 changetype: modify
 add: olcAccess
-olcAccess: to * by dn="cn=admin,dc=cloud,dc=com" write" > /var/tmp/access.ldif
+olcAccess: to * by dn="cn=admin,$BASE_DN" write" > /var/tmp/access.ldif
 
 ldapmodify -c -Y EXTERNAL -H ldapi:/// -f /var/tmp/access.ldif
 ldapmodify -c -Y EXTERNAL -H ldapi:/// -f /access.ldif
@@ -113,29 +114,29 @@ replace: olcLogLevel
 olcLogLevel: 256" > /var/tmp/loglevel.ldif
 ldapmodify -Y EXTERNAL -H ldapi:/// -f /var/tmp/loglevel.ldif
 
-echo "dn: ou=users,dc=cloud,dc=com
+echo "dn: ou=users,$BASE_DN
 ou: users
 objectClass: organizationalUnit
 objectclass: top
 
-dn: ou=groups,dc=cloud,dc=com
+dn: ou=groups,$BASE_DN
 ou: groups
 objectClass: organizationalUnit
 objectclass: top" > /var/tmp/ou.ldif
-ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/ou.ldif
+ldapadd -x -D "cn=admin,$BASE_DN" -w sumit -H ldapi:/// -f /var/tmp/ou.ldif
 
-echo "dn: cn=admins,ou=groups,dc=cloud,dc=com
+echo "dn: cn=admins,ou=groups,$BASE_DN
 cn: admins
 gidnumber: 500
 objectclass: posixGroup
 objectclass: top
 
-dn: cn=users,ou=groups,dc=cloud,dc=com
+dn: cn=users,ou=groups,$BASE_DN
 cn: users
 gidnumber: 501
 objectclass: posixGroup
 objectclass: top" > /var/tmp/groups.ldif
-ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/groups.ldif
+ldapadd -x -D "cn=admin,$BASE_DN" -w sumit -H ldapi:/// -f /var/tmp/groups.ldif
 
 /utility/ldap/createGroup.sh hadoop
 /utility/ldap/createUser.sh smaji hadoop sumit
@@ -152,55 +153,24 @@ ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/group
 /utility/ldap/createUser.sh hbase hadoop hbase
 /utility/ldap/createUser.sh livy hadoop livy
 
-#echo "dn: cn=Sumit Maji,ou=users,dc=cloud,dc=com
-#cn: Sumit Maji
-#gidnumber: 500
-#givenname: Sumit
-#homedirectory: /home/users/smaji
-#loginshell: /bin/bash
-#objectclass: inetOrgPerson
-#objectclass: posixAccount
-#objectclass: top
-#sn: Maji
-#uid: smaji
-#uidnumber: 1000
-#userpassword: sumit" > /var/tmp/sumit.ldif
-#ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/sumit.ldif
-
-#echo "dn: cn=hduser,ou=users,dc=cloud,dc=com
-#cn: hduser
-#gidnumber: 500
-#givenname: hduser
-#homedirectory: /home/users/hduser
-#loginshell: /bin/bash
-#objectclass: inetOrgPerson
-#objectclass: posixAccount
-#objectclass: top
-#sn: hduser
-#uid: hduser
-#uidnumber: 1000
-#userpassword: hadoop" > /var/tmp/sumit.ldif
-#ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /var/tmp/sumit.ldif
-
-
-echo "dn: ou=krb5,dc=cloud,dc=com
+echo "dn: ou=krb5,$BASE_DN
 ou: krb5
 objectClass: organizationalUnit
 
-dn: cn=kdc-srv,ou=krb5,dc=cloud,dc=com
+dn: cn=kdc-srv,ou=krb5,$BASE_DN
 cn: kdc-srv
 objectClass: simpleSecurityObject
 objectClass: organizationalRole
 description: Default bind DN for the Kerberos KDC server
 userPassword: sumit
 
-dn: cn=adm-srv,ou=krb5,dc=cloud,dc=com
+dn: cn=adm-srv,ou=krb5,$BASE_DN
 cn: adm-srv
 objectClass: simpleSecurityObject
 objectClass: organizationalRole
 description: Default bind DN for the Kerberos Administration server
 userPassword: sumit" > /tmp/krb5.ldif
-ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w sumit -H ldapi:/// -f /tmp/krb5.ldif
+ldapadd -x -D "cn=admin,$BASE_DN" -w sumit -H ldapi:/// -f /tmp/krb5.ldif
 
 
 }
@@ -224,6 +194,7 @@ start_ldap() {
 }
 
 main() {
+  echo "My Ldap password $LDAP_PASSWORD"
   if [ ! -f /ldap_initialized ]; then
     start_ldap 
     touch /ldap_initialized

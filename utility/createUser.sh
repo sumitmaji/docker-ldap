@@ -2,10 +2,11 @@
 [[ "TRACE" ]] && set -x
 
 : ${LDAP_PASSWORD:=sumit}
+: ${BASE_DN:=dc=cloud,dc=com}
 uid=$(< /var/userid)
-gid=`ldapsearch -x -b "ou=groups,dc=cloud,dc=com" "cn=$2" -D "cn=admin,dc=cloud,dc=com" -w ${LDAP_PASSWORD} -H ldap://ldap.cloud.com -LLL gidNumber | grep 'gidNumber' | grep -Eo '[0-9]+'`
+gid=`ldapsearch -x -b "ou=groups,$BASE_DN" "cn=$2" -D "cn=admin,$BASE_DN" -w ${LDAP_PASSWORD} -H ldap://ldap.cloud.com -LLL gidNumber | grep 'gidNumber' | grep -Eo '[0-9]+'`
 
-echo "dn: cn=$1,ou=users,dc=cloud,dc=com
+echo "dn: cn=$1,ou=users,$BASE_DN
 cn: $1
 gidnumber: $gid
 givenname: Sumit
@@ -18,7 +19,7 @@ sn: $1
 uid: $1
 uidnumber: $uid
 userpassword: $3" > /var/tmp/user.ldif
-ldapadd -x -D 'cn=admin,dc=cloud,dc=com' -w ${LDAP_PASSWORD} -H ldapi:/// -f /var/tmp/user.ldif
+ldapadd -x -D "cn=admin,$BASE_DN" -w ${LDAP_PASSWORD} -H ldapi:/// -f /var/tmp/user.ldif
 
 if [ $? == 0 ]
 then
