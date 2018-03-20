@@ -2,14 +2,19 @@
 
 [[ "TRACE" ]] && set -x
 
-: ${REALM:=CLOUD.COM}
-: ${DOMAIN_REALM:=cloud.com}
+source /config
+
+: ${REALM:=$(echo $DOMAIN_NAME | tr 'a-z' 'A-Z')}
+: ${DOMAIN_REALM:=$DOMAIN_NAME}
 : ${KERB_MASTER_KEY:=masterkey}
 : ${KERB_ADMIN_USER:=root}
-: ${KERB_ADMIN_PASS:=admin}
-: ${KDC_ADDRESS:=kerberos.cloud.com}
-: ${LDAP_HOST:=ldap://ldap.cloud.com}
-: ${BASE_DN:=dc=cloud,dc=com}
+: ${KERB_ADMIN_PASS:=$KERB_ADMIN_PASS}
+: ${KDC_ADDRESS:=$KDC_ADDRESS}
+: ${LDAP_HOST:=$LDAP_HOST}
+: ${BASE_DN:=$DC}
+: ${LDAP_PASSWORD:=$LDAP_PASSWORD}
+: ${DC_1:=$DC_1}
+: ${DC_2:=$DC_2}
 
 fix_nameserver() {
   cat>/etc/resolv.conf<<EOF
@@ -101,6 +106,9 @@ changetype: modify
 add: olcAccess
 olcAccess: to * by dn="cn=admin,$BASE_DN" write" > /var/tmp/access.ldif
 
+sed -i "s/\$DOMAIN_NAME_UPPER/$REALM/" /access.ldif
+sed -i "s/\$DC/$BASE_DN/" /access.ldif
+
 ldapmodify -c -Y EXTERNAL -H ldapi:/// -f /var/tmp/access.ldif
 ldapmodify -c -Y EXTERNAL -H ldapi:/// -f /access.ldif
 
@@ -123,7 +131,7 @@ dn: ou=groups,$BASE_DN
 ou: groups
 objectClass: organizationalUnit
 objectclass: top" > /var/tmp/ou.ldif
-ldapadd -x -D "cn=admin,$BASE_DN" -w sumit -H ldapi:/// -f /var/tmp/ou.ldif
+ldapadd -x -D "cn=admin,$BASE_DN" -w $LDAP_PASSWORD -H ldapi:/// -f /var/tmp/ou.ldif
 
 echo "dn: cn=admins,ou=groups,$BASE_DN
 cn: admins
@@ -136,22 +144,22 @@ cn: users
 gidnumber: 501
 objectclass: posixGroup
 objectclass: top" > /var/tmp/groups.ldif
-ldapadd -x -D "cn=admin,$BASE_DN" -w sumit -H ldapi:/// -f /var/tmp/groups.ldif
+ldapadd -x -D "cn=admin,$BASE_DN" -w $LDAP_PASSWORD -H ldapi:/// -f /var/tmp/groups.ldif
 
-/utility/ldap/createGroup.sh hadoop
-/utility/ldap/createUser.sh smaji hadoop sumit
-/utility/ldap/createUser.sh hduser hadoop hadoop
-/utility/ldap/createUser.sh hive hadoop hive
-/utility/ldap/createUser.sh hue hadoop hue
-/utility/ldap/createUser.sh oozie hadoop oozie
-/utility/ldap/createUser.sh yarn hadoop yarn
-/utility/ldap/createUser.sh hdfs hadoop hdfs
-/utility/ldap/createUser.sh mapred hadoop mapred
-/utility/ldap/createUser.sh jobhist hadoop jobhist
-/utility/ldap/createUser.sh spark hadoop spark
-/utility/ldap/createUser.sh pig hadoop pig
-/utility/ldap/createUser.sh hbase hadoop hbase
-/utility/ldap/createUser.sh livy hadoop livy
+/utility/ldap/createGroup.sh hadoop $BASE_DN $LDAP_PASSWORD
+/utility/ldap/createUser.sh smaji hadoop sumit $LDAP_PASSWORD $BASE_DN $LDAP_HOST 
+/utility/ldap/createUser.sh hduser hadoop hadoop $LDAP_PASSWORD $BASE_DN $LDAP_HOST
+/utility/ldap/createUser.sh hive hadoop hive $LDAP_PASSWORD $BASE_DN $LDAP_HOST
+/utility/ldap/createUser.sh hue hadoop hue $LDAP_PASSWORD $BASE_DN $LDAP_HOST
+/utility/ldap/createUser.sh oozie hadoop oozie $LDAP_PASSWORD $BASE_DN $LDAP_HOST
+/utility/ldap/createUser.sh yarn hadoop yarn $LDAP_PASSWORD $BASE_DN $LDAP_HOST
+/utility/ldap/createUser.sh hdfs hadoop hdfs $LDAP_PASSWORD $BASE_DN $LDAP_HOST
+/utility/ldap/createUser.sh mapred hadoop mapred $LDAP_PASSWORD $BASE_DN $LDAP_HOST
+/utility/ldap/createUser.sh jobhist hadoop jobhist $LDAP_PASSWORD $BASE_DN $LDAP_HOST
+/utility/ldap/createUser.sh spark hadoop spark $LDAP_PASSWORD $BASE_DN $LDAP_HOST
+/utility/ldap/createUser.sh pig hadoop pig $LDAP_PASSWORD $BASE_DN $LDAP_HOST
+/utility/ldap/createUser.sh hbase hadoop hbase $LDAP_PASSWORD $BASE_DN $LDAP_HOST
+/utility/ldap/createUser.sh livy hadoop livy $LDAP_PASSWORD $BASE_DN $LDAP_HOST
 
 echo "dn: ou=krb5,$BASE_DN
 ou: krb5
@@ -170,7 +178,7 @@ objectClass: simpleSecurityObject
 objectClass: organizationalRole
 description: Default bind DN for the Kerberos Administration server
 userPassword: sumit" > /tmp/krb5.ldif
-ldapadd -x -D "cn=admin,$BASE_DN" -w sumit -H ldapi:/// -f /tmp/krb5.ldif
+ldapadd -x -D "cn=admin,$BASE_DN" -w $LDAP_PASSWORD -H ldapi:/// -f /tmp/krb5.ldif
 
 
 }

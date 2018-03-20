@@ -3,7 +3,7 @@ dn: olcDatabase={1}hdb,cn=config
 changetype: modify
 delete: olcAccess
 olcAccess: {2}to *
-  by dn="cn=admin,dc=cloud,dc=com" write
+  by dn="cn=admin,$DC" write
   by * read
 -
 # 2.1.2
@@ -16,7 +16,7 @@ delete: olcAccess
 olcAccess: {0}to attrs=userPassword,shadowLastChange
   by self write
   by anonymous auth
-  by dn="cn=admin,dc=cloud,dc=com" write
+  by dn="cn=admin,$DC" write
   by * none
 -
 # 2.2.1.
@@ -27,10 +27,10 @@ olcAccess: to attrs=userPassword,shadowLastChange
 -
 # 2.2.2.
 add: olcAccess
-olcAccess: to dn.subtree="cn=CLOUD.COM,cn=krbContainer,dc=cloud,dc=com"
-  by dn="cn=adm-srv,ou=krb5,dc=cloud,dc=com" write
-  by dn="cn=kdc-srv,ou=krb5,dc=cloud,dc=com" read
-  by dn="cn=admin,dc=cloud,dc=com" write
+olcAccess: to dn.subtree="cn=$DOMAIN_NAME_UPPER,cn=krbContainer,$DC"
+  by dn="cn=adm-srv,ou=krb5,$DC" write
+  by dn="cn=kdc-srv,ou=krb5,$DC" read
+  by dn="cn=admin,$DC" write
   by * none
 -
 # 2.2.3.

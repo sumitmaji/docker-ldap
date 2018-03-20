@@ -1,10 +1,12 @@
 #!/bin/bash
 [[ "TRACE" ]] && set -x
 
-: ${LDAP_PASSWORD:=sumit}
-: ${BASE_DN:=dc=cloud,dc=com}
+: ${LDAP_PASSWORD:=$4}
+: ${BASE_DN:=$5}
+: ${LDAP_HOSTNAME:=$6}
+
 uid=$(< /var/userid)
-gid=`ldapsearch -x -b "ou=groups,$BASE_DN" "cn=$2" -D "cn=admin,$BASE_DN" -w ${LDAP_PASSWORD} -H ldap://ldap.cloud.com -LLL gidNumber | grep 'gidNumber' | grep -Eo '[0-9]+'`
+gid=`ldapsearch -x -b "ou=groups,$BASE_DN" "cn=$2" -D "cn=admin,$BASE_DN" -w ${LDAP_PASSWORD} -H ${LDAP_HOSTNAME} -LLL gidNumber | grep 'gidNumber' | grep -Eo '[0-9]+'`
 
 echo "dn: cn=$1,ou=users,$BASE_DN
 cn: $1

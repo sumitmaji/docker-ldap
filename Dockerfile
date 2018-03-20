@@ -5,10 +5,16 @@ MAINTAINER Sumit Kumar Maji
 RUN sed -i "s/^exit 101$/exit 0/" /usr/sbin/policy-rc.d
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG LDAP_DOMAIN=cloud.com
+ARG LDAP_DOMAIN
 ARG LDAP_ORG=CloudInc
-ARG LDAP_HOSTNAME=ldap.cloud.com
-ARG LDAP_PASSWORD=sumit
+ARG LDAP_HOSTNAME
+ARG LDAP_PASSWORD
+ARG BASE_DN
+
+RUN echo "ldap domain: $LDAP_DOMAIN"
+RUN echo "ldap hostname: $LDAP_HOSTNAME"
+RUN echo "ldap base_dn: $BASE_DN"
+RUN echo "LDAP_PASSWORD: $LDAP_PASSWORD"
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -41,14 +47,14 @@ RUN LC_ALL=C DEBIAN_FRONTEND=noninteractive apt-get install -y --force-yes slapd
 
 RUN apt-get install -yq phpldapadmin
 ADD setup.sh /etc/setup.sh
-RUN /bin/bash -c "/etc/setup.sh $LDAP_HOSTNAME" 
+RUN /bin/bash -c "/etc/setup.sh $LDAP_HOSTNAME $BASE_DN" 
 
 # Set FQDN for Apache Webserver
 RUN echo "ServerName ${LDAP_HOSTNAME}" > /etc/apache2/conf-available/fqdn.conf
 RUN a2enconf fqdn
 
 #RUN service apache2 restart
-ARG BASE_DN="dc=cloud,dc=com"
+#ARG BASE_DN=
 
 RUN echo "ldap-auth-config ldap-auth-config/rootbindpw password ${LDAP_PASSWORD}" | debconf-set-selections
 RUN echo "ldap-auth-config ldap-auth-config/bindpw password ${LDAP_PASSWORD}" | debconf-set-selections
@@ -92,6 +98,7 @@ ADD bootstrap.sh /bootstrap.sh
 RUN chmod +x /bootstrap.sh
 ADD kerberos.schema.gz /kerberos.schema.gz 
 ADD config/access.ldif /access.ldif
+ADD config/config /config
 RUN touch /var/userid
 RUN echo '1000' > /var/userid
 RUN chown root:root /var/userid

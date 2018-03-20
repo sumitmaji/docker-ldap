@@ -4,8 +4,8 @@
 uid=$(< /var/userid)
 gid=$(< /var/groupid)
 
-: ${LDAP_PASSWORD:=sumit}
-: ${BASE_DN:=dc=cloud,dc=com}
+: ${LDAP_PASSWORD:=$3}
+: ${BASE_DN:=$2}
 
 echo "dn: cn=$1,ou=groups,$BASE_DN
 cn: $1

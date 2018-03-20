@@ -1,6 +1,6 @@
 #!/bin/bash
 
-: ${BASE_DN:=dc=cloud,dc=com}
+: ${BASE_DN:=$2}
 
 `sed -i "s/servers->setValue('server','host','127.0.0.1');/servers->setValue('server','host','$1');/" /etc/phpldapadmin/config.php`
 `sed -i "s/servers->setValue('server','base',array('dc=example,dc=com'));/servers->setValue('server','base',array('$BASE_DN'));/" /etc/phpldapadmin/config.php`
