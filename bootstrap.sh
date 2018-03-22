@@ -199,6 +199,11 @@ start_ldap() {
    enableGss
    service ssh restart
    create_ldif
+
+   if [ "$ENABLE_SSL" == 'true' ]
+   then
+     /utility/ldap/setupssl.sh
+   fi
 }
 
 main() {

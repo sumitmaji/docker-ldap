@@ -108,10 +108,16 @@ RUN echo '502' > /var/groupid
 RUN mkdir -p /utility/ldap
 ADD utility/createGroup.sh /utility/ldap/createGroup.sh
 ADD utility/createUser.sh /utility/ldap/createUser.sh
+ADD utility/setupssl.sh /utility/ldap/setupssl.sh
+RUN chmod 700 /utility/ldap/setupssl.sh
 RUN chmod 700 /utility/ldap/createGroup.sh
 RUN chmod 700 /utility/ldap/createUser.sh
 RUN chown root:root /utility/ldap/createUser.sh
 RUN chown root:root /utility/ldap/createGroup.sh
+RUN chown root:root /utility/ldap/setupssl.sh
+
+RUN mkdir -p /certificates
+ADD ldap.default.svc.cloud.uat/* /certificates/ 
 
 EXPOSE 389 636 80
 ENTRYPOINT ["/bootstrap.sh"]

@@ -5,3 +5,4 @@ DC=dc=default,dc=svc,dc=cloud,dc=uat
 LDAP_HOSTNAME=ldap.default.svc.cloud.uat
 KDC_ADDRESS=kerberos.default.svc.cloud.uat
 LDAP_HOST=ldap://ldap.default.svc.cloud.uat
+ENABLE_SSL=true
