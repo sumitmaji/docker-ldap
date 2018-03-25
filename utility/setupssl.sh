@@ -42,4 +42,6 @@ echo "TLS_CACERT /etc/ldap/sasl2/ca.crt" >> /etc/ldap/ldap.conf
 service slapd stop
 kill -9 $(ps -ef | grep openldap | grep '/usr/sbin/slapd' | awk '{print $2}')
 
+sleep 10
+
 service slapd start
