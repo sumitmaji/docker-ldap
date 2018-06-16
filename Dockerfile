@@ -1,4 +1,4 @@
-FROM sumit/base
+FROM master.cloud.com:5000/base
 MAINTAINER Sumit Kumar Maji
 
 # Avoid ERROR: invoke-rc.d: policy-rc.d denied execution of start.
@@ -47,7 +47,7 @@ RUN LC_ALL=C DEBIAN_FRONTEND=noninteractive apt-get install -y --force-yes slapd
 
 RUN apt-get install -yq phpldapadmin
 ADD setup.sh /etc/setup.sh
-RUN /bin/bash -c "/etc/setup.sh $LDAP_HOSTNAME $BASE_DN" 
+RUN /bin/bash -c "/etc/setup.sh $LDAP_HOSTNAME $BASE_DN"
 
 # Set FQDN for Apache Webserver
 RUN echo "ServerName ${LDAP_HOSTNAME}" > /etc/apache2/conf-available/fqdn.conf
@@ -96,7 +96,7 @@ RUN apt-get clean
 
 ADD bootstrap.sh /bootstrap.sh
 RUN chmod +x /bootstrap.sh
-ADD kerberos.schema.gz /kerberos.schema.gz 
+ADD kerberos.schema.gz /kerberos.schema.gz
 ADD config/access.ldif /access.ldif
 ADD config/config /config
 RUN touch /var/userid
@@ -117,7 +117,7 @@ RUN chown root:root /utility/ldap/createGroup.sh
 RUN chown root:root /utility/ldap/setupssl.sh
 
 RUN mkdir -p /certificates
-ADD ldap.default.svc.cloud.uat/* /certificates/ 
+ADD ldap.default.svc.cloud.uat/* /certificates/
 
 EXPOSE 389 636 80
 ENTRYPOINT ["/bootstrap.sh"]
