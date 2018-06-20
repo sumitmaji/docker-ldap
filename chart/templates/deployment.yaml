@@ -67,8 +67,8 @@ spec:
           #   initialDelaySeconds: 20
           readinessProbe:
             exec:
-              command: ['ldapsearch', '-x -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
-            initialDelaySeconds: 61
+              command: ['ldapsearch -x -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
+            initialDelaySeconds: 20
           volumeMounts:
           - name: ldapsecret
             mountPath: /etc/secret/ldap/
