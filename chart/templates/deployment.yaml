@@ -60,14 +60,17 @@ spec:
 #            valueFrom:
 #              secretKeyRef:
 #                name: krbsecret
-#               key: password
+#                key: password
           # livenessProbe:
           #   exec:
           #     command: ['ldapsearch', '-LLLQY EXTERNAL -H ldapi:/// -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
           #   initialDelaySeconds: 20
           readinessProbe:
             exec:
-              command: ['curl -k ldaps://ldap:636/']
+              command:
+              - curl
+              - -k
+              - ldaps://ldap:636/
             initialDelaySeconds: 20
           volumeMounts:
           - name: ldapsecret
