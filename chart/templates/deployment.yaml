@@ -61,10 +61,10 @@ spec:
 #              secretKeyRef:
 #                name: krbsecret
 #                key: password
-          livenessProbe:
-            exec:
-              command: ['ldapsearch', '-LLLQY EXTERNAL -H ldapi:/// -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
-            initialDelaySeconds: 20
+          # livenessProbe:
+          #   exec:
+          #     command: ['ldapsearch', '-LLLQY EXTERNAL -H ldapi:/// -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
+          #   initialDelaySeconds: 20
           # readinessProbe:
           #   httpGet:
           #     path: /
