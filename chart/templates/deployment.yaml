@@ -22,10 +22,10 @@ spec:
       hostname: {{ template "ldap.name" . }}
       volumes:
       - name: ldapsecret
-        secret: 
+        secret:
           secretName: ldapsecret
       - name: krbsecret
-        secret: 
+        secret:
           secretName: krbsecret
       containers:
         - name: {{ .Chart.Name }}
@@ -61,13 +61,21 @@ spec:
 #              secretKeyRef:
 #                name: krbsecret
 #                key: password
+          livenessProbe:
+            exec:
+              command: ['ldapsearch', '-LLLQY EXTERNAL -H ldapi:/// -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
+            initialDelaySeconds: 20
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
           volumeMounts:
           - name: ldapsecret
             mountPath: /etc/secret/ldap/
-            readOnly: true 
+            readOnly: true
           - name: krbsecret
             mountPath: /etc/secret/krb/
-            readOnly: true 
+            readOnly: true
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}
