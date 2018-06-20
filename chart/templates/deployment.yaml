@@ -67,7 +67,7 @@ spec:
           #   initialDelaySeconds: 20
           readinessProbe:
             exec:
-              command: ['ldapsearch -x -h ldap -LLL -D "cn=admin,dc=default,dc=svc,dc=cloud,dc=uat" -w sumit -b "cn=schema,cn=config" "(objectClass=olcSchemaConfig)" dn -Z']
+              command: ['ldapsearch', '-x -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
             initialDelaySeconds: 61
           volumeMounts:
           - name: ldapsecret
