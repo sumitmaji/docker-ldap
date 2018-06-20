@@ -65,10 +65,10 @@ spec:
           #   exec:
           #     command: ['ldapsearch', '-LLLQY EXTERNAL -H ldapi:/// -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
           #   initialDelaySeconds: 20
-          # readinessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
+          readinessProbe:
+            exec:
+              command: ['ldapsearch', '-LLLQY EXTERNAL -H ldapi:/// -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
+            initialDelaySeconds: 20
           volumeMounts:
           - name: ldapsecret
             mountPath: /etc/secret/ldap/
