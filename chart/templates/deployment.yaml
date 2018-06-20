@@ -70,8 +70,9 @@ spec:
               command:
               - curl
               - -k
-              - ldaps://localhost:636/
-            initialDelaySeconds: 20
+              - ldaps://ldap:636/
+            initialDelaySeconds: 30
+            periodSeconds: 10
           volumeMounts:
           - name: ldapsecret
             mountPath: /etc/secret/ldap/
