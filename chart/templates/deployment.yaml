@@ -67,7 +67,7 @@ spec:
           #   initialDelaySeconds: 20
           readinessProbe:
             exec:
-              command: ['ldapsearch', '-LLLQY EXTERNAL -H ldapi:/// -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
+              command: ['ldapsearch ', '-LLLQY EXTERNAL -H ldapi:/// -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
             initialDelaySeconds: 20
           volumeMounts:
           - name: ldapsecret
