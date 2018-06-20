@@ -60,7 +60,7 @@ spec:
 #            valueFrom:
 #              secretKeyRef:
 #                name: krbsecret
-#                key: password
+#               key: password
           # livenessProbe:
           #   exec:
           #     command: ['ldapsearch', '-LLLQY EXTERNAL -H ldapi:/// -b cn=config "(|(cn=config)(olcDatabase={1}hdb))"']
