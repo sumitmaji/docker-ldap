@@ -1,6 +1,6 @@
 # LDAP
 
-## Usefull Links
+### Usefull Links
 
 https://wiki.ubuntuusers.de/Archiv/LDAP_Client_Authentifizierung/<br>
 http://techpubs.spinlocksolutions.com/dklar/ldap.html<br>
