@@ -187,29 +187,29 @@ userPassword: sumit" > /tmp/krb5.ldif
 ldapadd -x -D "cn=admin,$BASE_DN" -w $LDAP_PASSWORD -H ldapi:/// -f /tmp/krb5.ldif
 
 #Install kube tokens
-# mkdir -p kubernetes_tokens
-# echo "include /kubernetesToken.schema" > kubernetes_tokens/schema_convert.conf
-# slapcat -f /kubernetes_tokens/schema_convert.conf -F /kubernetes_tokens -s "cn=kubernetestoken,cn=schema,cn=config"
-# cp /kubernetes_tokens/cn\=config/cn\=schema/cn\=\{0\}kubernetestoken.ldif \
-# /kubernetestoken.ldif
+mkdir -p kubernetes_tokens
+echo "include /kubernetesToken.schema" > kubernetes_tokens/schema_convert.conf
+slapcat -f /kubernetes_tokens/schema_convert.conf -F /kubernetes_tokens -s "cn=kubernetestoken,cn=schema,cn=config"
+cp /kubernetes_tokens/cn\=config/cn\=schema/cn\=\{0\}kubernetestoken.ldif \
+/kubernetestoken.ldif
 
 #####Edit the file here
-# sed -i 's/cn={0}kubernetestoken/cn=kubernetestoken,cn=schema,cn=config/' /kubernetestoken.ldif
-# sed -i 's/{0}kubernetestoken/kubernetestoken/' /kubernetestoken.ldif
-# sed -i '$d' /kubernetestoken.ldif
-# sed -i '$d' /kubernetestoken.ldif
-# sed -i '$d' /kubernetestoken.ldif
-# sed -i '$d' /kubernetestoken.ldif
-# sed -i '$d' /kubernetestoken.ldif
-# sed -i '$d' /kubernetestoken.ldif
-# sed -i '$d' /kubernetestoken.ldif
+sed -i 's/cn={0}kubernetestoken/cn=kubernetestoken,cn=schema,cn=config/' /kubernetestoken.ldif
+sed -i 's/{0}kubernetestoken/kubernetestoken/' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
 
 
-# ldapadd -QY EXTERNAL -H ldapi:/// -f ./kubernetestoken.ldif
+ldapadd -QY EXTERNAL -H ldapi:/// -f ./kubernetestoken.ldif
 
-# echo "dn: cn=smaji,ou=users,$BASE_DN" >> /users.txt
-# /utility/ldap/createTokenLdif.sh $LDAP_PASSWORD $BASE_DN
-#
+echo "dn: cn=smaji,ou=users,$BASE_DN" >> /users.txt
+/utility/ldap/createTokenLdif.sh $LDAP_PASSWORD $BASE_DN
+
 }
 
 enableGss() {
