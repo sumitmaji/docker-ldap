@@ -230,7 +230,7 @@ start_ldap() {
 }
 
 main() {
-  echo "My Ldap password $LDAP_PASSWORD"
+  echo "My Ldap password is $LDAP_PASSWORD"
   if [ ! -f /ldap_initialized ]; then
     start_ldap
     touch /ldap_initialized
