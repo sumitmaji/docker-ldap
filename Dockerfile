@@ -1,4 +1,4 @@
-FROM master.cloud.com:5000/base
+FROM master.cloud.com:5000/base-trusty
 MAINTAINER Sumit Kumar Maji
 
 # Avoid ERROR: invoke-rc.d: policy-rc.d denied execution of start.
@@ -109,12 +109,17 @@ RUN mkdir -p /utility/ldap
 ADD utility/createGroup.sh /utility/ldap/createGroup.sh
 ADD utility/createUser.sh /utility/ldap/createUser.sh
 ADD utility/setupssl.sh /utility/ldap/setupssl.sh
+ADD utility/createTokenLdif.sh /utility/ldap/createTokenLdif.sh
+
 RUN chmod 700 /utility/ldap/setupssl.sh
 RUN chmod 700 /utility/ldap/createGroup.sh
 RUN chmod 700 /utility/ldap/createUser.sh
+RUN chmod 700 /utility/ldap/createTokenLdif.sh
+
 RUN chown root:root /utility/ldap/createUser.sh
 RUN chown root:root /utility/ldap/createGroup.sh
 RUN chown root:root /utility/ldap/setupssl.sh
+ADD config/kubernetesToken.schema /kubernetesToken.schema
 
 RUN mkdir -p /certificates
 ADD ldap.default.svc.cloud.uat/* /certificates/

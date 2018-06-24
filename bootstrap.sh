@@ -2,18 +2,17 @@
 
 [[ "TRACE" ]] && set -x
 
-echo "Ldap Password check for debugging: $LDAP_PASSWORD"
 source /config
 
 : ${REALM:=$(echo $DOMAIN_NAME | tr 'a-z' 'A-Z')}
 : ${DOMAIN_REALM:=$DOMAIN_NAME}
 : ${KERB_MASTER_KEY:=masterkey}
 : ${KERB_ADMIN_USER:=root}
-: ${KERB_ADMIN_PASS:=$KERB_ADMIN_PASS}
+: ${KERB_ADMIN_PASS:=$(</etc/secret/krb/password)}
 : ${KDC_ADDRESS:=$KDC_ADDRESS}
 : ${LDAP_HOST:=$LDAP_HOST}
 : ${BASE_DN:=$DC}
-: ${LDAP_PASSWORD:=$LDAP_PASSWORD}
+: ${LDAP_PASSWORD:=$(</etc/secret/ldap/password)}
 : ${DC_1:=$DC_1}
 : ${DC_2:=$DC_2}
 
@@ -181,6 +180,29 @@ description: Default bind DN for the Kerberos Administration server
 userPassword: sumit" > /tmp/krb5.ldif
 ldapadd -x -D "cn=admin,$BASE_DN" -w $LDAP_PASSWORD -H ldapi:/// -f /tmp/krb5.ldif
 
+#Install kube tokens
+mkdir -p kubernetes_tokens
+echo "include /kubernetesToken.schema" > kubernetes_tokens/schema_convert.conf
+slapcat -f /kubernetes_tokens/schema_convert.conf -F /kubernetes_tokens -s "cn=kubernetestoken,cn=schema,cn=config"
+cp /kubernetes_tokens/cn\=config/cn\=schema/cn\=\{0\}kubernetestoken.ldif \
+/kubernetestoken.ldif
+
+#####Edit the file here
+sed -i 's/cn={0}kubernetestoken/cn=kubernetestoken,cn=schema,cn=config/' /kubernetestoken.ldif
+sed -i 's/{0}kubernetestoken/kubernetestoken/' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+sed -i '$d' /kubernetestoken.ldif
+
+
+ldapadd -QY EXTERNAL -H ldapi:/// -f ./kubernetestoken.ldif
+
+echo "dn: cn=smaji,ou=users,$BASE_DN" >> /users.txt
+/utility/ldap/createTokenLdif.sh $LDAP_PASSWORD $BASE_DN
 
 }
 
@@ -209,7 +231,6 @@ start_ldap() {
 
 main() {
   echo "My Ldap password $LDAP_PASSWORD"
-  echo "Hi Sumit"
   if [ ! -f /ldap_initialized ]; then
     start_ldap
     touch /ldap_initialized
