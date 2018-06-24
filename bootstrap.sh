@@ -2,6 +2,7 @@
 
 [[ "TRACE" ]] && set -x
 
+echo "Ldap Password check for debugging: $LDAP_PASSWORD"
 source /config
 
 : ${REALM:=$(echo $DOMAIN_NAME | tr 'a-z' 'A-Z')}
@@ -147,7 +148,7 @@ objectclass: top" > /var/tmp/groups.ldif
 ldapadd -x -D "cn=admin,$BASE_DN" -w $LDAP_PASSWORD -H ldapi:/// -f /var/tmp/groups.ldif
 
 /utility/ldap/createGroup.sh hadoop $BASE_DN $LDAP_PASSWORD
-/utility/ldap/createUser.sh smaji hadoop sumit $LDAP_PASSWORD $BASE_DN $LDAP_HOST 
+/utility/ldap/createUser.sh smaji hadoop sumit $LDAP_PASSWORD $BASE_DN $LDAP_HOST
 /utility/ldap/createUser.sh hduser hadoop hadoop $LDAP_PASSWORD $BASE_DN $LDAP_HOST
 /utility/ldap/createUser.sh hive hadoop hive $LDAP_PASSWORD $BASE_DN $LDAP_HOST
 /utility/ldap/createUser.sh hue hadoop hue $LDAP_PASSWORD $BASE_DN $LDAP_HOST
@@ -209,7 +210,7 @@ start_ldap() {
 main() {
   echo "My Ldap password $LDAP_PASSWORD"
   if [ ! -f /ldap_initialized ]; then
-    start_ldap 
+    start_ldap
     touch /ldap_initialized
   else
     start_ldap
