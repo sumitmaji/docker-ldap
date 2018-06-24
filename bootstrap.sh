@@ -209,7 +209,7 @@ ldapadd -x -D "cn=admin,$BASE_DN" -w $LDAP_PASSWORD -H ldapi:/// -f /tmp/krb5.ld
 
 # echo "dn: cn=smaji,ou=users,$BASE_DN" >> /users.txt
 # /utility/ldap/createTokenLdif.sh $LDAP_PASSWORD $BASE_DN
-
+#
 }
 
 enableGss() {
