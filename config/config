@@ -6,3 +6,4 @@ LDAP_HOSTNAME=ldap.default.svc.cloud.uat
 KDC_ADDRESS=kerberos.default.svc.cloud.uat
 LDAP_HOST=ldap://ldap.default.svc.cloud.uat
 ENABLE_SSL=true
+ENABLE_KUBERNETES=true

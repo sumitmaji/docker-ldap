@@ -25,6 +25,12 @@ EOF
 
 fix_hostname() {
   sed -i "/^hosts:/ s/ *files dns/ dns files/" /etc/nsswitch.conf
+  if [ "$ENABLE_KUBERNETES" == 'true' ]
+  then
+   cp /etc/hosts ~/tmp
+   sed -i "s/\([0-9\.]*\)\([\t ]*\)\($(hostname -f)\)/\1 $(hostname -f).$DOMAIN_REALM \3/"  ~/tmp
+   cp -f ~/tmp /etc/hosts
+  fi
 }
 
 create_config() {
@@ -232,6 +238,7 @@ start_ldap() {
 main() {
   echo "My Ldap password iss $LDAP_PASSWORD"
   if [ ! -f /ldap_initialized ]; then
+    fix_hostname
     start_ldap
     touch /ldap_initialized
   else
