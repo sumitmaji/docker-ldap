@@ -209,7 +209,7 @@ start_ldap() {
 
 main() {
   echo "My Ldap password $LDAP_PASSWORD"
-  echo "Hi"
+  echo "Hi Sumit"
   if [ ! -f /ldap_initialized ]; then
     start_ldap
     touch /ldap_initialized
